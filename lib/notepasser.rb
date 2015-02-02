@@ -1,6 +1,7 @@
 require "notepasser/version"
 require "notepasser/init_db"
 require "camping"
+require "httparty"
 require "pry"
 
 Camping.goes :Notepasser
@@ -9,7 +10,170 @@ module Notepasser
 end
 
 module Notepasser::Models
+  class User < ActiveRecord::Base
+    has_many :Message
+  end
+
+  class Message < ActiveRecord::Base
+    belongs_to :User 
+  end
 end
 
 module Notepasser::Controllers
+  class Index < R '/'
+    def get
+      @welcome_message = "Welcome to the Notepasser Messaging System!"
+      @user_link = 'Users Page'
+      @create_link = 'Create User'
+      render :index
+    end
+  end
+
+  class ListUsers < R '/users'
+    def get
+      @users = Notepasser::Models::User.select(:name)
+      render :user_list
+    end
+  end
+
+  class AddUser < R '/users/new'
+    def get
+      render :create_user
+    end
+
+    def post
+      user = Notepasser::Models::User.new(:name => @input.name)
+      user.save
+      redirect ListUsers
+    end
+  end
+
+  class ListMessages < R '/users/([^/]+)/messages'
+    def get(name)
+      @user = Notepasser::Models::User.find_by_name(name)
+      @content = Notepasser::Models::Message.where(:recipient_id => @user.id)
+      render :message_view
+    end
+
+    def post(name)
+      user = Notepasser::Models::User.where(:name => name)
+      user.destroy_all
+      redirect ListUsers
+    end
+  end
+
+  class AddMessage < R '/users/([^/]+)/create_message'
+    def get(name)
+      render :create_message
+    end
+
+    def post(name)
+      receiver_id = Notepasser::Models::User.select(:id).where(:name => @input.name)
+      @message = Notepasser::Models::Message.new(:recipient_id => receiver_id, :content => @input.content, :read_status => false)
+      @message.save
+      @message_success = 'Message Sent!'
+      redirect ListMessages, @input.name
+    end
+  end
+
+  class DisplayMessage < R '/users/([^/]+)/messages/(\d+)'
+    def get(user, number)
+      @user = Notepasser::Models::User.find_by_name(user)
+      @content = Notepasser::Models::Message.where("recipient_id = #{@user.id} AND id = #{number}")
+      render :individual_message
+    end
+  end
+end
+
+module Notepasser::Views
+  def layout
+    html do
+      head do
+        title { "Notepasser Messaging System" }
+      end
+      body do
+        self << yield
+      end
+    end
+  end
+
+  def index
+    p(@welcome_message)
+    div do
+      a(@user_link, :href => R(ListUsers))
+    end
+    div do
+      a(@create_link, :href => R(AddUser))
+    end
+  end
+
+  def user_list
+    h1 "All Users:"
+    if @users.nil? || @users.empty?
+      div do
+        p 'No Users in the Database!'
+      end
+      div do
+        a 'Create User', :href => R(AddUser)
+      end
+    else
+      ul do
+        @users.each do |user|
+          li do
+            a user.name, :href => R(ListMessages, user.name)
+          end
+        end
+      end
+    end
+  end
+
+  def message_view
+    h1 "User - '#{@user.name}' Messages:"
+    form :method => :post do
+      input :type => 'submit', :name => :name, :value => 'Delete User'
+    end
+    if @content.nil? || @content.empty?
+      p 'No Messages To Display.'
+    else
+      ol do
+        @content.each_with_index do |c, i|
+          li do
+            a "Message #{i + 1}", :href => R(DisplayMessage, @user.name, i + 1)
+          end
+        end
+      end
+    end
+    div do
+      a 'Create Message', :href => R(AddMessage, @user.name)
+    end
+  end
+
+  def create_user
+    div do
+      p 'Enter a new user name:'
+      form  :method => :post do
+        textarea :name => :name, :rows => '1', :cols => '25'
+        input :type => 'submit', :value => 'Submit!'
+      end
+    end
+  end
+
+  def create_message
+    h1 'Create Message:'
+    div do
+      p 'Enter a user for which to send your message (Username) and then enter your message text:'
+      form :method => :post do
+        textarea :name => :name, :rows => '1', :cols => '25'
+        textarea :name => :content, :rows => '20', :cols => '50'
+        input :type => 'submit', :value => 'Submit!'
+      end
+    end
+    div do
+      p @message_success unless @message_success.nil? || @message_success.empty?
+    end
+  end
+
+  def individual_message
+    p @content.content
+  end
 end
