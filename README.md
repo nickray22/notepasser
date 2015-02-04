@@ -26,13 +26,13 @@ HTTParty.get('http://localhost:3301/users')
 
 **post /users/new**
 
-Posts a new user to the Users table in the database with the chosen <user_name> attribute
+Posts a new user to the Users table in the database with the chosen 'user_name' attribute
 
 ```ruby
 HTTParty.post('http://localhost:3301/users/new', :query => {:name => '<user_name>'})
 ```
 
-**get /users/<user_name>/messages**
+**get /users/'user_name'/messages**
 
 Returns a list of messages for the specified user from the Messages table in the database
 
@@ -40,33 +40,33 @@ Returns a list of messages for the specified user from the Messages table in the
 HTTParty.get('http://localhost:3301/users/<user_name>/messages')
 ```
 
-**post /users/<user_name>/messages**
+**post /users/'user_name'/messages**
 
-Deletes the specified <user_name> from the Users table in the database
+Deletes the specified 'user_name' from the Users table in the database
 
 ```ruby
 HTTParty.post('http://localhost:3301/users/<user_name>/messages')
 ```
 
-**post /users/<user_name>/create_message**
+**post /users/'user_name'/create_message**
 
-Posts a message from the specified <user_name> to the specified <recipient_name> with the text <content>
+Posts a message from the specified 'user_name' to the specified 'recipient_name' with the text 'content'
 
 ```ruby
 HTTParty.post('http://localhost:3301/users/<user_name>/create_message', :query => {:name => '<recipient_name>', :content => '<content>'})
 ```
 
-**post /users/<user_name>/messages/<message_number>**
+**post /users/'user_name'/messages/'message_number'**
 
-Deletes the message under <message_number> for the specified <user_name>
+Deletes the message under 'message_number' for the specified 'user_name'
 
 ```ruby
 HTTParty.post('http://localhost:3301/users/<user_name>/messages/<message_number>')
 ```
 
-**post /users/<user_name>/messages/<message_number>/read**
+**post /users/'user_name'/messages/'message_number'/read**
 
-Posts an update to the Messages table in the database that marks the message under <message_number> for the specified <user_name> as read
+Posts an update to the Messages table in the database that marks the message under 'message_number' for the specified 'user_name' as read
 
 ```ruby
 HTTParty.post('http://localhost:3301/users/<user_name>/messages/<message_number>/read')
