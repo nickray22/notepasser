@@ -14,6 +14,12 @@ the route, and any parameters and what they do.
 
 ## API Calls
 
+If API calls aren't your thing - after starting the webrick server with the chosen ip address, just open a browser and hit that ip with port :3301 on the index page to start work from the webview. Example:
+
+```
+http://localhost:3301/
+```
+
 ***Examples of each call using the HTTParty gem***
 
 **get /users**
